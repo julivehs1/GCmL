@@ -41,6 +41,7 @@ void HierarchyPrinter::print() {
             spacing.pop_back();
         }
         std::cout << std::endl;
+
     }
 }
 
@@ -50,7 +51,7 @@ std::string HierarchyPrinter::createSpacing(std::vector<std::string> spacing, ch
     for(int i = 0; i < n; i++){
         s += spacing[i];
         if(i < n - 1){
-            s += char(179);
+            s += ' ';
         }
     }
     s += corner;

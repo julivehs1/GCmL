@@ -19,6 +19,7 @@ int main(int argc, const char *argv[])
             ("help,h", "Help screen")
             ("path", value<std::filesystem::path>()->required(), "input file")
             ("root,r", "Enables creation of Root Package")
+            ("diagram,d", "Prints the package hierarchy")
             ("root_name", value<std::string>(), "Name of Root");
 
         boost::program_options::positional_options_description pos_desc;
@@ -33,10 +34,12 @@ int main(int argc, const char *argv[])
         }else{
             std::filesystem::path path = std::filesystem::current_path();
             path /= vm["path"].as<std::filesystem::path>();
+            path = std::filesystem::canonical(path);
 
-            std::string root_name = vm.count("root_name") ? vm["root_name"].as<std::string>() : path.parent_path().filename().string();
+            std::string root_name = vm.count("root_name") ? vm["root_name"].as<std::string>() : path.filename().string();
             bool enable_root = vm.count("root");
-            Traversal::traverse(path, enable_root, root_name);
+            bool enable_print = vm.count("diagram");
+            Traversal::traverse(path, enable_root, root_name, enable_print);
         }
 
     }catch (const error &ex){

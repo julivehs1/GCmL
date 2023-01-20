@@ -12,5 +12,5 @@ include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIR})
 
 
-add_executable(GCmL src/Traversal.cpp src/Traversal.h src/Generator.cpp src/Generator.h src/main.cpp)
+add_executable(GCmL src/Traversal.cpp src/Traversal.h src/Generator.cpp src/Generator.h src/HierarchyPrinter.cpp src/HierarchyPrinter.h src/main.cpp)
 target_link_libraries(GCmL Boost::program_options)

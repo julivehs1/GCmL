@@ -9,12 +9,13 @@
 #include <filesystem>
 #include <vector>
 #include <string>
+#include "HierarchyPrinter.h"
 
 class Traversal {
 public:
-    static void traverse(std::filesystem::path path, bool include_root, std::string root_name);
+    static void traverse(std::filesystem::path path, bool include_root, std::string root_name, bool enable_printer);
 private:
-    static bool traverse(std::filesystem::path path, std::vector<std::string> &package);
+    static bool traverse(std::filesystem::path path, std::vector<std::string> &package, HierarchyPrinter &hierarchyPrinter);
     static const std::vector<std::string> HEADER_EXTENSIONS;
     static const std::vector<std::string> SOURCE_EXTENSIONS;
 

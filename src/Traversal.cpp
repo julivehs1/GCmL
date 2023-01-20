@@ -11,18 +11,27 @@ const std::vector<std::string> Traversal::SOURCE_EXTENSIONS = {".cpp"};
 
 
 
-void Traversal::traverse(std::filesystem::path path, bool include_root, std::string root_name) {
+void Traversal::traverse(std::filesystem::path path, bool include_root, std::string root_name, bool enable_printer) {
     std::vector<std::string> package;
     if(include_root){
         package.push_back(root_name);
     }
-    traverse(path, package);
+
+    HierarchyPrinter printer;
+    traverse(path, package, printer);
+    if(enable_printer){
+        printer.print();
+    }
 }
 
-bool Traversal::traverse(std::filesystem::path path, std::vector<std::string> &package) {
+bool Traversal::traverse(std::filesystem::path path, std::vector<std::string> &package, HierarchyPrinter &hierarchyPrinter) {
     std::vector<std::string> subpackages;
     std::vector<std::string> sources;
     std::vector<std::string> headers;
+
+    if(!package.empty()){
+        hierarchyPrinter.entry(package.back());
+    }
 
     for (const auto & entry : std::filesystem::directory_iterator(path)){
         std::string name = entry.path().filename().string();
@@ -31,7 +40,7 @@ bool Traversal::traverse(std::filesystem::path path, std::vector<std::string> &p
             package.push_back(name);
 
             //call recursively
-            bool subpackage_valid = traverse(entry, package);
+            bool subpackage_valid = traverse(entry, package, hierarchyPrinter);
 
             // remove from package
             package.pop_back();
@@ -55,8 +64,10 @@ bool Traversal::traverse(std::filesystem::path path, std::vector<std::string> &p
         // Call generator
         Generator::generatePackage(path, package, sources, headers, subpackages);
         Generator::generateCmakeList(path);
+        hierarchyPrinter.leave();
         return true;
     }else{
+        hierarchyPrinter.leave();
         return false;
     }
 }

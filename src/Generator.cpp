@@ -25,7 +25,7 @@ void Generator::generatePackage(const std::filesystem::path &path, const std::ve
     if(!subpackages.empty()) {
         package_file << "\n";
     }
-    
+
     // Source
     package_file << "set(SOURCE" << "\n";
     for(const std::string &source : sources){

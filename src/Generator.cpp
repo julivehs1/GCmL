@@ -48,7 +48,7 @@ void Generator::generatePackage(const std::filesystem::path &path, const std::ve
     if(!sources.empty()) {
         package_file << "add_library(" << package_name << "-OBJECT OBJECT  ${SOURCE} ${HEADER})" << "\n";
         package_file << "add_library(" << package_name << "-INTERFACE INTERFACE)" << "\n";
-        package_file << "target_link_libraries(" << package_name << "-INTERFACE INTERFACE Utils-OBJECT $<TARGET_OBJECTS:" << package_name << "-OBJECT>)" << "\n";
+        package_file << "target_link_libraries(" << package_name << "-INTERFACE INTERFACE " << package_name << "-OBJECT $<TARGET_OBJECTS:" << package_name << "-OBJECT>)" << "\n";
     }else{
         package_file << "add_library(" << package_name << "-INTERFACE INTERFACE ${HEADER})" << "\n";
     }
@@ -91,7 +91,7 @@ void Generator::generateCmakeList(const std::filesystem::path &path) {
             }
         }
 
-        if(std::count(lines.begin(), lines.end(), include) == 0){ // inject if missing
+        if(std::count_if(lines.begin(), lines.end(), [&include](std::string line){return line == include || line == (include + "\n");}) == 0){ // inject if missing
             std::ofstream newFile(cmakelists_path, std::ofstream::trunc);
             newFile << include << "\n";
             for (auto & line : lines) {

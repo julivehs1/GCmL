@@ -18,7 +18,7 @@ This projects aims to enable package-based grouping for C++.
 GCmL is very easy to use:
 
 ```
-.\GCml.exe .\src\
+.\GCmL.exe .\src\
 ```
 
 You just have to specify a directory on which the package root is located.
@@ -26,12 +26,12 @@ GCml will discover all source and header files recursively.
 
 You can also introduce a root-package with a specific name using:
 ```
-.\GCml.exe .\src\ -r --root_name Core
+.\GCmL.exe .\src\ -r --root_name Core
 ```
 
 The additional use of flag `-d` enables GCmL to print the package hierarchy:
 ```
-.\GCml.exe .\src\ -r --root_name Core -d
+.\GCmL.exe .\src\ -r --root_name Core -d
 Package Hierarchy:
 Core ─┐
       ├─ Filesystem

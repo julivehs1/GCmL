@@ -13,15 +13,15 @@ const std::filesystem::path Generator::LINKER_FILE = "linker.cmake";
 const std::string Generator::LINK_PACKAGE_FUNC_NAME = "link_package";
 const std::string Generator::LINK_PACKAGE_FUNC =
         "function(" + LINK_PACKAGE_FUNC_NAME + " TARGET LIB)\n"
-        "    #Library\n"
-        "    get_target_property(LIB_INTERFACE ${LIB} ALIASED_TARGET)\n"
-        "\n"
         "    #Target\n"
         "    get_target_property(TARGET_INTERFACE ${TARGET} ALIASED_TARGET)\n"
         "    get_target_property(TARGET_OBJECT_LIST ${TARGET_INTERFACE} INTERFACE_LINK_LIBRARIES)\n"
         "    list(GET TARGET_OBJECT_LIST 0 TARGET_OBJECT)\n"
         "    #Link\n"
-        "    target_link_libraries(${TARGET_OBJECT} PRIVATE ${LIB_INTERFACE})\n"
+        "    target_link_libraries(\n"
+        "\t${TARGET_OBJECT} \n"
+        "\tPRIVATE\n"
+        "\t$<TARGET_PROPERTY:${LIB},ALIASED_TARGET>)\n"
         "endfunction()";
 
 

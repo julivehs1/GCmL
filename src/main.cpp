@@ -20,7 +20,8 @@ int main(int argc, const char *argv[])
             ("path", value<std::filesystem::path>()->required(), "input file")
             ("root,r", "Enables creation of Root Package")
             ("diagram,d", "Prints the package hierarchy")
-            ("root_name", value<std::string>(), "Name of Root");
+            ("root_name", value<std::string>(), "Name of Root")
+            ("linker,l", "Enables generation of Linker at root");
 
         boost::program_options::positional_options_description pos_desc;
         pos_desc.add("path", -1);
@@ -39,7 +40,8 @@ int main(int argc, const char *argv[])
             std::string root_name = vm.count("root_name") ? vm["root_name"].as<std::string>() : path.filename().string();
             bool enable_root = vm.count("root");
             bool enable_print = vm.count("diagram");
-            Traversal::traverse(path, enable_root, root_name, enable_print);
+            bool enable_linker = vm.count("linker");
+            Traversal::traverse(path, enable_root, root_name, enable_print, enable_linker);
         }
 
     }catch (const error &ex){

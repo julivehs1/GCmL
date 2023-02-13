@@ -7,24 +7,28 @@
 
 
 const std::vector<std::string> Traversal::HEADER_EXTENSIONS = {".h"};
-const std::vector<std::string> Traversal::SOURCE_EXTENSIONS = {".cpp"};
+const std::vector<std::string> Traversal::SOURCE_EXTENSIONS = {".cpp", ".c"};
 
 
 
-void Traversal::traverse(std::filesystem::path path, bool include_root, std::string root_name, bool enable_printer) {
+void Traversal::traverse(std::filesystem::path path, bool include_root, std::string root_name, bool enable_printer, bool enable_linker) {
     std::vector<std::string> package;
     if(include_root){
         package.push_back(root_name);
     }
 
+    if(enable_linker){
+        Generator::generateLinker(path);
+    }
+
     HierarchyPrinter printer;
-    traverse(path, package, printer);
+    traverse(path, package, printer, enable_linker, 0);
     if(enable_printer){
         printer.print();
     }
 }
 
-bool Traversal::traverse(std::filesystem::path path, std::vector<std::string> &package, HierarchyPrinter &hierarchyPrinter) {
+bool Traversal::traverse(std::filesystem::path path, std::vector<std::string> &package, HierarchyPrinter &hierarchyPrinter, bool enable_linker, int level) {
     std::vector<std::string> subpackages;
     std::vector<std::string> sources;
     std::vector<std::string> headers;
@@ -40,7 +44,7 @@ bool Traversal::traverse(std::filesystem::path path, std::vector<std::string> &p
             package.push_back(name);
 
             //call recursively
-            bool subpackage_valid = traverse(entry, package, hierarchyPrinter);
+            bool subpackage_valid = traverse(entry, package, hierarchyPrinter, enable_linker, level + 1);
 
             // remove from package
             package.pop_back();
@@ -63,7 +67,7 @@ bool Traversal::traverse(std::filesystem::path path, std::vector<std::string> &p
     if((subpackages.size() + sources.size() + headers.size()) > 0 && package.size() > 0){
         // Call generator
         Generator::generatePackage(path, package, sources, headers, subpackages);
-        Generator::generateCmakeList(path);
+        Generator::generateCmakeList(path, enable_linker ? level : 0);
         hierarchyPrinter.leave();
         return true;
     }else{

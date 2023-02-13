@@ -76,7 +76,7 @@ void Generator::generatePackage(const std::filesystem::path &path, const std::ve
 
     // Create Include dir
     std::string include_dir = generatePackageName(package, "/");
-    package_file << "file(COPY ${HEADER} DESTINATION DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/include/" << include_dir << ")" << "\n";
+    package_file << "file(COPY ${HEADER} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/include/" << include_dir << ")" << "\n";
     package_file << "target_include_directories(" << package_name << "-INTERFACE INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)" << "\n";
 
     package_file << "\n";

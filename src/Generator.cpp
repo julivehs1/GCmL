@@ -66,7 +66,7 @@ void Generator::generatePackage(const std::filesystem::path &path, const std::ve
        }else{
         package_file << "add_library(" << package_name << "-OBJECT OBJECT  ${SOURCE} ${HEADER})" << "\n";
     }
-    package_file << "set_target_properties(" << package_name << "-OBJECT PROPERTIES PUBLIC_HEADER ${HEADER})"  << "\n";
+    package_file << "set_target_properties(" << package_name << "-OBJECT PROPERTIES PUBLIC_HEADER \"${HEADER}\")"  << "\n";
 
     package_file << "\n";
 

@@ -86,9 +86,16 @@ void Generator::generatePackage(const std::filesystem::path &path, const std::ve
     package_file << "\n";
 
     //Link Subpackages
-    for(const std::string &subpackage : subpackages){
-        package_file << "target_link_libraries(" << package_name << "-OBJECT PUBLIC " << package_name << "-" << subpackage << "-INTERFACE" << ")" << "\n";
-    }
+    //for(const std::string &subpackage : subpackages){
+    //    package_file << "target_link_libraries(" << package_name << "-OBJECT PUBLIC " << package_name << "-" << subpackage << "-INTERFACE" << ")" << "\n";
+    //}
+
+    //LINK top package
+    std::vector<std::string> top_package_vec(package);
+    top_package_vec.pop_back();
+    std::string top_package = generatePackageName(top_package_vec, "-");
+    package_file << "target_link_libraries(" << package_name << "-OBJECT PUBLIC " << package_name << "-" << top_package << "-INTERFACE" << ")" << "\n";
+
 
     //Alias
     package_file << "add_library(" << nice_package_name << " ALIAS " << package_name << "-INTERFACE)";

@@ -18,10 +18,10 @@ const std::string Generator::LINK_PACKAGE_FUNC =
         "    get_target_property(TARGET_OBJECT_LIST ${TARGET_INTERFACE} INTERFACE_LINK_LIBRARIES)\n"
         "    list(GET TARGET_OBJECT_LIST 0 TARGET_OBJECT)\n"
         "    #Link\n"
-        "    target_link_libraries(\n"
-        "\t${TARGET_OBJECT} \n"
-        "\tPRIVATE\n"
-        "\t$<TARGET_PROPERTY:${LIB},ALIASED_TARGET>)\n"
+       "    target_link_libraries(\n"
+       "\t${TARGET_OBJECT} \n"
+       "\tPUBLIC\n"
+       "\t$<TARGET_PROPERTY:${LIB},ALIASED_TARGET>)\n"
         "endfunction()";
 
 
@@ -76,7 +76,11 @@ void Generator::generatePackage(const std::filesystem::path &path, const std::ve
 
     // Create Include dir
     std::string include_dir = generatePackageName(package, "/");
-    package_file << "file(COPY ${HEADER} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/include/" << include_dir << ")" << "\n";
+    package_file << "file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/" << include_dir << ")" << "\n";
+    package_file << "foreach(X IN LISTS HEADER)" << "\n";
+    package_file << "\tfile(CREATE_LINK ${CMAKE_CURRENT_SOURCE_DIR}/${X} ${CMAKE_CURRENT_BINARY_DIR}/include/" << include_dir << "/${X})" << "\n";
+    //package_file << "\texecute_process(COMMAND python /mnt/d/Projekte/mklinker.py ${CMAKE_CURRENT_SOURCE_DIR}/${X} ${CMAKE_CURRENT_BINARY_DIR}/include/" << include_dir << "/${X})" << "\n";
+    package_file << "endforeach()" << "\n";
     package_file << "target_include_directories(" << package_name << "-INTERFACE INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)" << "\n";
 
     package_file << "\n";

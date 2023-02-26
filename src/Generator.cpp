@@ -14,16 +14,15 @@ const std::string Generator::LINK_PACKAGE_FUNC_NAME = "link_package";
 const std::string Generator::LINK_PACKAGE_FUNC =
         "function(" + LINK_PACKAGE_FUNC_NAME + " TARGET LIB)\n"
         "    #Target\n"
-        "    get_target_property(TARGET_INTERFACE ${TARGET} ALIASED_TARGET)\n"
-        "    get_target_property(TARGET_OBJECT_LIST ${TARGET_INTERFACE} INTERFACE_LINK_LIBRARIES)\n"
-        "    list(GET TARGET_OBJECT_LIST 0 TARGET_OBJECT)\n"
-        "    #Link\n"
+        "    get_target_property(TARGET_OBJECT ${TARGET} ALIASED_TARGET)\n"
        "    target_link_libraries(\n"
        "\t${TARGET_OBJECT} \n"
        "\tPUBLIC\n"
        "\t$<TARGET_PROPERTY:${LIB},ALIASED_TARGET>)\n"
         "endfunction()";
 
+
+#include <iostream>
 
 void Generator::generatePackage(const std::filesystem::path &path, const std::vector<std::string> &package,
                                 const std::vector<std::string> &sources, const std::vector<std::string> &headers,
@@ -48,7 +47,7 @@ void Generator::generatePackage(const std::filesystem::path &path, const std::ve
     package_file << "\t" << ")" << "\n\n";
 
     // Source
-    package_file << "set(HEADER" << "\n";
+    package_file << "set(PRIVATE_HEADER" << "\n";
     for(const std::string &header : headers){
         package_file << "\t\t" << header << "\n";
     }
@@ -59,29 +58,35 @@ void Generator::generatePackage(const std::filesystem::path &path, const std::ve
     std::string package_name = generatePackageName(package, "-");
     std::string nice_package_name = generatePackageName(package, "::");
 
-    // Object
-    if(sources.empty()) {
-        package_file << "file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/null.cpp \"\")" << "\n";
-        package_file << "add_library(" << package_name << "-OBJECT OBJECT  ${CMAKE_CURRENT_BINARY_DIR}/null.cpp ${HEADER})" << "\n";
-       }else{
-        package_file << "add_library(" << package_name << "-OBJECT OBJECT  ${SOURCE} ${HEADER})" << "\n";
-    }
-    package_file << "set_target_properties(" << package_name << "-OBJECT PROPERTIES PUBLIC_HEADER \"${HEADER}\")"  << "\n";
-
-    package_file << "\n";
-
-    //Interface
-    package_file << "add_library(" << package_name << "-INTERFACE INTERFACE)" << "\n";
-    package_file << "target_link_libraries(" << package_name << "-INTERFACE INTERFACE " << package_name << "-OBJECT $<TARGET_OBJECTS:" << package_name << "-OBJECT>)" << "\n";
 
     // Create Include dir
     std::string include_dir = generatePackageName(package, "/");
     package_file << "file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/" << include_dir << ")" << "\n";
-    package_file << "foreach(X IN LISTS HEADER)" << "\n";
+    package_file << "foreach(X IN LISTS PRIVATE_HEADER)" << "\n";
     package_file << "\tfile(CREATE_LINK ${CMAKE_CURRENT_SOURCE_DIR}/${X} ${CMAKE_CURRENT_BINARY_DIR}/include/" << include_dir << "/${X})" << "\n";
     //package_file << "\texecute_process(COMMAND python /mnt/d/Projekte/mklinker.py ${CMAKE_CURRENT_SOURCE_DIR}/${X} ${CMAKE_CURRENT_BINARY_DIR}/include/" << include_dir << "/${X})" << "\n";
     package_file << "endforeach()" << "\n";
-    package_file << "target_include_directories(" << package_name << "-INTERFACE INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)" << "\n";
+
+
+    package_file << "set(PUBLIC_HEADER" << "\n";
+    for(const std::string &header : headers){
+        package_file << "\t\t" << "${CMAKE_CURRENT_BINARY_DIR}/include/" << include_dir << "/" << header << "\n";
+    }
+    package_file << "\t" << ")" << "\n\n";
+
+
+    // Object
+    if(sources.empty()) {
+        package_file << "file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/null.cpp \"\")" << "\n";
+        package_file << "add_library(" << package_name << "-OBJECT STATIC  ${CMAKE_CURRENT_BINARY_DIR}/null.cpp ${HEADER})" << "\n";
+       }else{
+        package_file << "add_library(" << package_name << "-OBJECT STATIC  ${SOURCE} ${PRIVATE_HEADER})" << "\n";
+    }
+    package_file << "set_target_properties(" << package_name << "-OBJECT PROPERTIES PRIVATE_HEADER \"${PRIVATE_HEADER}\")"  << "\n";
+    package_file << "set_target_properties(" << package_name << "-OBJECT PROPERTIES PUBLIC_HEADER \"${PUBLIC_HEADER}\")"  << "\n";
+
+
+    package_file << "target_include_directories(" << package_name << "-OBJECT PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include)" << "\n";
 
     package_file << "\n";
 
@@ -93,12 +98,17 @@ void Generator::generatePackage(const std::filesystem::path &path, const std::ve
     //LINK top package
     std::vector<std::string> top_package_vec(package);
     top_package_vec.pop_back();
-    std::string top_package = generatePackageName(top_package_vec, "-");
-    package_file << "target_link_libraries(" << package_name << "-OBJECT PUBLIC " << package_name << "-" << top_package << "-INTERFACE" << ")" << "\n";
+    if(not top_package_vec.empty()) {
+        std::string top_package = generatePackageName(top_package_vec, "-");
+        package_file << "target_link_libraries(" << package_name << "-OBJECT PUBLIC " << top_package << "-OBJECT" << ")" << "\n";
 
+        //package_file << "target_link_libraries(" << package_name << " PUBLIC " << "$<TARGET_PROPERTY:${LIB},ALIASED_TARGET>)\n"
+    }
+
+    package_file << "\n";
 
     //Alias
-    package_file << "add_library(" << nice_package_name << " ALIAS " << package_name << "-INTERFACE)";
+    package_file << "add_library(" << nice_package_name << " ALIAS " << package_name << "-OBJECT)";
     package_file.close();
 }
 
